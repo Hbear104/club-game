@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>社團生存戰：從菜鳥到社長</title>
+<style>
+:root{
+  --bg:#FFF6E9; --ink:#2B2118; --muted:#8A7A6A; --card:#FFFFFF;
+  --brand:#F2994A; --brand-d:#D9772A; --ok:#27AE60; --bad:#E04F4F;
+  --line:#06C755; --shadow:0 6px 20px rgba(80,50,20,.12);
+  font-family:"Helvetica Neue","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#E9DCC9;color:var(--ink)}
+body{display:flex;justify-content:center}
+#phone{position:relative;width:100%;max-width:440px;height:100vh;height:100dvh;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+#status{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;font-size:13px;font-weight:600;background:rgba(255,255,255,.6)}
+#status .r{display:flex;gap:10px;align-items:center}
+#snd{border:0;background:none;font-size:15px;cursor:pointer;padding:0}
+.screen{display:none;flex:1;flex-direction:column;padding:20px 20px 40px;animation:fade .25s;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+#qbox .tag{display:table;font-size:13px;padding:3px 10px;border-radius:20px;margin-bottom:8px;font-weight:800}
+#game.emer #qbox{border:3px solid var(--bad);background:#FFF3F3}
+#game.emer #qbox .tag{background:var(--bad);color:#fff}
+#game.bonus #qbox{border:3px solid #E5B000;background:#FFFBEA}
+#game.bonus #qbox .tag{background:#E5B000;color:#fff}
+#alert{position:absolute;inset:0;z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:30px}
+#alert.on{display:flex;animation:flash .4s 3}
+#alert.e{background:rgba(200,30,30,.94)} #alert.b{background:rgba(220,160,0,.95)}
+#alert .ai{font-size:90px} #alert .at{font-size:32px;font-weight:800;margin-top:10px} #alert .as{font-size:16px;margin-top:10px;opacity:.95;line-height:1.6}
+@keyframes flash{50%{opacity:.75}}
+#review{position:absolute;inset:0;z-index:40;background:rgba(30,20,10,.55);display:none;align-items:flex-end}
+#review.on{display:flex}
+#review .sheet{background:var(--bg);width:100%;max-height:85%;border-radius:22px 22px 0 0;display:flex;flex-direction:column}
+#review .hd{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font-weight:800;font-size:18px;border-bottom:1px solid #E8D8C3}
+#review .x{border:0;background:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+#review .bd{overflow-y:auto;padding:6px 18px 30px;font-size:14px;line-height:1.6}
+#review .it{background:#fff;border-radius:14px;padding:12px;margin-top:10px;box-shadow:var(--shadow)}
+#review .c{color:var(--ok);font-weight:700}
+.screen.on{display:flex}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+h1{font-size:28px;margin:8px 0 4px;line-height:1.25}
+.sub{color:var(--muted);font-size:14px;line-height:1.6}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:700;cursor:pointer;margin-top:12px;background:var(--brand);color:#fff;box-shadow:0 4px 0 var(--brand-d)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--brand-d)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 #E2D3BF}
+input{width:100%;padding:14px;border-radius:12px;border:2px solid #E8D8C3;font-size:17px;margin-top:16px;background:#fff}
+.mascot{font-size:84px;text-align:center;margin:28px 0 8px}
+.rules{background:#fff;border-radius:16px;padding:14px 16px;margin-top:18px;font-size:14px;line-height:1.8;box-shadow:var(--shadow)}
+
+/* call */
+#call{background:linear-gradient(180deg,#1F2A24,#0E1511);color:#fff;align-items:center;text-align:center;justify-content:space-between;padding:50px 20px 60px}
+#call .tag{font-size:13px;opacity:.7;letter-spacing:2px}
+#call .ava{font-size:92px;width:150px;height:150px;border-radius:50%;background:#2F3D35;display:flex;align-items:center;justify-content:center;margin:24px auto 14px;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(6,199,85,.5)}100%{box-shadow:0 0 0 30px rgba(6,199,85,0)}}
+#call .name{font-size:26px;font-weight:700}
+#call .msg{margin-top:18px;font-size:17px;background:rgba(255,255,255,.1);padding:12px 16px;border-radius:14px;min-height:48px}
+.callbtns{display:flex;gap:70px}
+.cb{width:72px;height:72px;border-radius:50%;border:0;font-size:30px;cursor:pointer;color:#fff}
+.cb.no{background:#E5484D}.cb.yes{background:var(--line);animation:shake 1s infinite}
+@keyframes shake{0%,100%{transform:rotate(0)}10%,30%{transform:rotate(-12deg)}20%,40%{transform:rotate(12deg)}50%{transform:rotate(0)}}
+.cbl{font-size:13px;margin-top:6px;opacity:.8}
+
+/* game */
+#hud{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700}
+#hp{font-size:20px;letter-spacing:2px}
+.lost{display:inline-block;animation:break .5s forwards}
+@keyframes break{50%{transform:scale(1.5) rotate(20deg)}100%{transform:scale(1);opacity:.25;filter:grayscale(1)}}
+#bossbar{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:10px 12px;margin-top:12px;box-shadow:var(--shadow)}
+#bossbar .a{font-size:30px}
+#bossbar .t{font-size:13px;color:var(--muted)}
+#bossbar .n{font-weight:700}
+#tbar{height:10px;background:#EFE2D0;border-radius:6px;margin-top:14px;overflow:hidden}
+#tfill{height:100%;width:100%;background:var(--ok);border-radius:6px}
+#tnum{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+#qbox{background:#fff;border-radius:18px;padding:18px;margin-top:8px;font-size:18px;font-weight:700;line-height:1.55;box-shadow:var(--shadow)}
+#opts{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.opt{border:2px solid #EADCC8;background:#fff;border-radius:14px;padding:13px 14px;font-size:16px;text-align:left;cursor:pointer;color:var(--ink);line-height:1.45}
+.opt:active{background:#FFF1DE}
+.opt.ok{border-color:var(--ok);background:#E7F7EC}
+.opt.bad{border-color:var(--bad);background:#FDEAEA}
+.opt.gone{opacity:.25;text-decoration:line-through;pointer-events:none}
+.opt:disabled{cursor:default}
+#help{margin-top:14px;background:#4A6FA5;color:#fff;box-shadow:0 4px 0 #34507A;font-size:15px}
+#help:disabled{opacity:.4}
+#fb{display:none;margin-top:12px;border-radius:14px;padding:14px;font-size:15px;line-height:1.6}
+#fb.good{display:block;background:#E7F7EC}
+#fb.boom{display:block;background:#FDEAEA}
+
+/* banner */
+#banner{position:absolute;left:10px;right:10px;top:-120px;background:#fff;border-radius:16px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;transition:top .35s;z-index:20;cursor:pointer}
+#banner.on{top:42px}
+#banner .ic{width:38px;height:38px;border-radius:10px;background:var(--line);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+#banner .bt{font-size:12px;color:var(--muted)}
+#banner .bm{font-size:14px;font-weight:600}
+
+/* clear & result */
+.center{align-items:center;text-align:center;justify-content:center}
+.big{font-size:90px}
+.promo{background:#fff;border-radius:18px;padding:16px 20px;margin:16px 0;box-shadow:var(--shadow);font-size:16px;line-height:1.7;width:100%}
+#cardimg{width:100%;border-radius:16px;box-shadow:var(--shadow);margin-top:6px}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+#report{display:none;background:#fff;border-radius:16px;padding:14px;margin-top:12px;font-size:14px;line-height:1.6;box-shadow:var(--shadow)}
+#report .it{border-bottom:1px dashed #E8D8C3;padding:8px 0}
+#report .it:last-child{border:0}
+#report .c{color:var(--ok);font-weight:700}
+#toast{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(30,20,10,.88);color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:30;white-space:nowrap}
+#toast.on{opacity:1}
+#copybox{display:none;width:100%;margin-top:8px;font-size:13px;height:90px}
+</style>
+</head>
+<body>
+<div id="phone">
+  <div id="status">
+    <span id="clock">12:00</span>
+    <span id="date">週三 9月10日</span>
+    <span class="r"><button id="snd" aria-label="音效開關">🔊</button><span id="batt">🔋100%</span></span>
+  </div>
+
+  <!-- 登入 -->
+  <section class="screen on" id="login">
+    <div class="mascot">📣</div>
+    <h1>社團生存戰<br>從菜鳥到社長</h1>
+    <p class="sub">五關、五個大魔王。學長姐、社長、課外組、指導老師、評鑑委員輪流打電話給你。命用完，你就成為社團幽靈。</p>
+    <input id="nick" maxlength="10" placeholder="輸入你的名字（例：小明）">
+    <button class="btn" id="startBtn">加入社團 🎉</button>
+    <div class="rules">
+      ⏱ 每題限時，越後面越短<br>
+      ❤️ 三條命，有些題目答錯直接出局<br>
+      🚨 每關會突然出現「臨時狀況」，時間更短<br>
+      ⭐ 每關一題「加分題」，答對多一條命，答錯不扣血<br>
+      📞 「打給畢業學長求救」可刪掉兩個錯的選項，一局一次<br>
+      🔊 建議開聲音
+    </div>
+  </section>
+
+  <!-- 來電 -->
+  <section class="screen" id="call">
+    <div>
+      <div class="tag">社團 LINE 語音通話</div>
+      <div class="ava" id="callAva">🔥</div>
+      <div class="name" id="callName">熱血學長姐</div>
+      <div class="msg" id="callMsg">……</div>
+    </div>
+    <div class="callbtns">
+      <div><button class="cb no" id="decline">✕</button><div class="cbl">拒接</div></div>
+      <div><button class="cb yes" id="accept">✆</button><div class="cbl">接聽</div></div>
+    </div>
+  </section>
+
+  <!-- 遊戲 -->
+  <section class="screen" id="game">
+    <div id="hud"><span id="hp">❤️❤️❤️</span><span id="prog">進度 1/7</span><span id="surv">0 分</span></div>
+    <div id="bossbar"><span class="a" id="bAva">🔥</span><div><div class="t" id="bStage">第 1 關・迎新招生</div><div class="n" id="bName">vs 熱血學長姐</div></div></div>
+    <div id="tbar"><div id="tfill"></div></div>
+    <div id="tnum">15 秒</div>
+    <div id="qbox">題目</div>
+    <div id="opts"></div>
+    <div id="fb"></div>
+    <button class="btn" id="nextBtn" style="display:none">下一題 →</button>
+    <button class="btn" id="help">📞 打給畢業學長求救（刪除 2 個選項）</button>
+  </section>
+
+  <!-- 過關 -->
+  <section class="screen center" id="clear">
+    <div class="big" id="clearIcon">🎊</div>
+    <h1 id="clearTitle">升職了！</h1>
+    <div class="promo" id="clearText"></div>
+    <button class="btn" id="nextLevel">準備接下一通電話 📞</button>
+  </section>
+
+  <!-- 結果 -->
+  <section class="screen" id="result">
+    <h1 id="rTitle" style="text-align:center">社團通知單</h1>
+    <img id="cardimg" alt="戰績卡">
+    <div class="hint">長按圖片就能存到手機，拿去發限動</div>
+    <button class="btn" id="copyBtn">📋 複製戰績，揪朋友來挑戰</button>
+    <textarea id="copybox" readonly></textarea>
+    <button class="btn ghost" id="repBtn">🧾 檢討錯題</button>
+    <button class="btn ghost" id="again">🔁 重新加入社團</button>
+  </section>
+
+  <div id="alert"><div class="ai" id="alI">🚨</div><div class="at" id="alT">臨時狀況！</div><div class="as" id="alS"></div></div>
+  <div id="review"><div class="sheet"><div class="hd"><span id="rvT">錯題檢討</span><button class="x" id="rvX" aria-label="關閉">✕</button></div><div class="bd" id="rvB"></div></div></div>
+
+  <div id="banner"><div class="ic">LINE</div><div><div class="bt" id="bnT">社團幹部群（128）</div><div class="bm" id="bnM">@所有人</div></div></div>
+  <div id="toast"></div>
+</div>
+
+<script>
+/* ====== 題庫：每題 [題目, [正解, 錯1, 錯2, 錯3], 答錯吐槽, 是否一擊出局] ====== */
+const LEVELS = [
+ {boss:'熱血學長姐', ava:'🔥', stage:'迎新招生', rank:'菜鳥社員', time:15,
+  call:['學弟妹～博覽會攤位快來顧！！','你今天會來社課吧？會吧？？','迎新宿營的保險表單交了嗎！'],
+  qs:[
+   ['社團博覽會的攤位前一個人都沒有，你該怎麼辦？',['主動發傳單，拉路人玩攤位小遊戲','坐著滑手機，等緣分自己走過來','趴在攤位桌上睡午覺','跑去隔壁熱舞社的攤位跳舞'],'緣分不會自己走過來，社員也不會。'],
+   ['學長說「來社課就是一家人」，第一次社課你該？',['準時到，順便記住幾個人的名字','遲到一小時，從後門偷偷溜進來','吃完點心就走','全程戴著耳機'],'一家人？你比較像只來吃點心的遠房親戚。'],
+   ['社費 500 元，新生問「可以先欠嗎？」',['說明社費用途和繳費期限，給他繳費方式','直接說好啊，不用繳了','叫他自己去問學長','已讀不回'],'社費欠著欠著，最後就變成你自己墊。'],
+   ['迎新宿營要去校外，保險和遊覽車的資料該怎麼處理？',['活動前提早整理好，交給課外組','保險是什麼？可以吃嗎？','等出事了再說','出發當天在車上再補'],'等出事再說？到時候你就是那個「事」。',true],
+   ['社團 IG 要發招生文，最該放什麼？',['社課時間、地點和報名連結','一張糊掉的合照','一句「懂的就來」','發完就把帳號設成私人'],'「懂的就來」……結果沒人懂。'],
+   ['學姐半夜一點在群組問：「明天誰能幫忙搬器材？」',['早上起來回覆幾點可以到','假裝沒看到','丟一張貼圖然後消失','直接退群'],'貼圖不能搬器材，學姐記住你了。'],
+   ['新生在群組問了一個早就公告過的問題',['友善回答，附上記事本公告的連結','回他兩個字「爬文」','截圖到幹部群嘲笑他','把他踢出群組'],'你嚇跑了今年唯一的新生。'],
+  ]},
+ {boss:'社長', ava:'😎', stage:'社課與活動', rank:'活動組員', time:14,
+  call:['下週社課你來帶，沒問題吧？','企劃書今天可以給我嗎？','欸活動照片整理好了沒'],
+  qs:[
+   ['社長說「下週社課你來帶」，你該？',['提前備課，準備好教材和備案','當天到現場再想','放 YouTube 影片放兩小時','前一天突然請病假'],'臨場發揮的結果是：全場尷尬十分鐘。'],
+   ['活動企劃書要寫預算，你會？',['列出每一項支出和報價的來源','寫「大概三萬」','抄去年的，只改日期','全部寫成「雜支」'],'三萬塊的雜支，課外組看了只想退件。'],
+   ['活動當天下大雨，戶外場地不能用了',['改用事先借好的雨備場地','照常舉辦，淋雨才有回憶','直接取消，也不通知大家','在群組問大家「怎麼辦」'],'大家淋成落湯雞，回憶確實很深刻。'],
+   ['社課的出席率越來越低，你該？',['發問卷了解原因，再調整內容','在群組罵沒來的人','點名沒到就扣社費','乾脆不開了'],'越罵人越少，這是社團物理定律。'],
+   ['幹部會議討論了兩小時還是沒結論',['整理出幾個選項，表決後寫成會議記錄','再開兩小時','叫社長自己決定，事後再抱怨','散會去吃宵夜'],'宵夜很好吃，但問題還在。'],
+   ['跟別的社團合辦活動，對方一直已讀不回',['列好分工和期限，打電話確認','等他們自己想通','上 Dcard 公開罵他們','自己全部包下來，然後崩潰'],'兩社合辦，最後變成兩社絕交。'],
+   ['想借文薈館的會議室開幹部會議，正確流程是？',['填文薈館場地借用申請表單，再到 Google 行事曆確認有借到','直接進去開，沒人就是我的','跟警衛說是老師叫你來的','在社團群組喊一聲就算借了'],'沒在行事曆上確認，開到一半就被真正借到的人請出去。'],
+   ['申請完場地，Google 行事曆上卻找不到你的預約',['可能時段已被借走或時間填錯，檢查後重新申請','行事曆壞了，照樣去用','打給社長罵他','當天提早去佔位子'],'行事曆上沒有你，場地就不是你的。'],
+   ['社團要借 W5B08 團練室練習',['用團練室專用的預約表單申請','用一般文薈館借用表單就好','直接去練，有空就用','借隔壁琴房，反正都能出聲'],'團練室有自己的預約表單，填錯表單等於沒借。'],
+   ['社長交代你「把活動照片整理一下」',['按日期分類上傳雲端，分享連結','一次丟 300 張到群組','留在自己手機裡就好','只留自己的美照'],'群組被洗版，大家的手機容量都爆了。'],
+  ]},
+ {boss:'課外組承辦人', ava:'📋', stage:'經費申請與核銷', rank:'社團總務', time:13,
+  call:['同學，你的經費申請表有問題喔。','你們這個活動，可能不在補助範圍喔。','核銷單據我看了一下，我們聊聊。'],
+  qs:[
+   ['社課訂便當，一個 $150，學輔經費可以怎麼報？',['正餐每人每餐上限 $100，超過的部分要自付','全額 $150 都可以報','便當不能報','報 $200，多的當社費'],'正餐每人每餐 $100 以內，多出來的 $50 是你的。'],
+   ['活動要準備茶點飲料，每人經費上限是多少？',['每人 $40 以內','每人 $100 以內','沒有上限，喝開心就好','每人一杯珍奶，不管價錢'],'茶點每人 $40 以內，手搖飲超過的部分要自己吸收。'],
+   ['校外研習要住一晚，住宿費每人每晚上限是？',['$700 以內','$1,500 以內','住五星級，學校會懂','一間房塞十個人就不用錢'],'住宿每人每晚 $700 以內，超過要自己補差額。'],
+   ['活動辦在校外，經費表少了哪一項一定會出事？',['保險費，校外活動一定要編列','茶點費','海報印刷費','幹部的宵夜費'],'校外活動沒編保險費？這題直接出局。',true],
+   ['請校外講師來演講，人事費要注意什麼？',['講師費、評審費等人事費要另外編列 2.11% 補充保費','講師費給多少就報多少','用便當代替講師費','講師是學長，免費就好不用編'],'補充保費 2.11% 沒編到，經費就對不起來了。'],
+   ['在系統填經費金額時，正確的做法是？',['先勾選支出項目，再填金額，不能填負數','先填金額，項目之後再說','填負數抵掉超支的部分','全部填在「其他」'],'系統不吃負數，也不會幫你猜支出項目。'],
+   ['社團想在 12 月辦一場活動，申請學輔經費補助',['不行，12 月的活動不補助','可以，年底活動最需要錢','只要寫成 11 月 31 日就好','改到 12 月 1 日凌晨辦'],'12 月的活動不補助，11 月 31 日也不存在。'],
+   ['下列哪一個活動可以申請學輔經費補助？',['成果發表','送舊','迎新','系烤'],'送舊、迎新、系烤一律不補助，只能自籌。'],
+   ['不確定某樣東西能不能核銷，你該？',['購買前先問課外組','先買了再說','問學長「應該可以吧？」','上網隨便找一個答案'],'「應該可以吧」是核銷界最貴的一句話。'],
+   ['活動的發票弄丟了，你該？',['照規定請店家補開，或洽課外組怎麼處理','自己手寫一張','拿別張發票充數','當作沒有這一筆'],'自己手寫？這叫偽造文書，不叫核銷。',true],
+   ['用社團經費結帳時，店員問「要累積會員點數嗎？」',['不用，公款消費不累積個人點數','當然要，點數是我的','用社長的電話累積','順便用信用卡刷，還能拿回饋'],'公款買東西，點數卻進了你的口袋，這帳說不清。'],
+  ]},
+ {boss:'指導老師', ava:'👨‍🏫', stage:'成發大作戰', rank:'副社長', time:12,
+  call:['成發準備得怎麼樣了？','成果報告什麼時候給我？','聽說器材壞了？'],
+  qs:[
+   ['成發前一週，表演的人還沒排練完',['加開排練，排出彩排時間表','相信當天會出現奇蹟','把節目取消掉','換你自己上台獨唱'],'奇蹟沒有出現，出現的是台下的尷尬笑聲。'],
+   ['成發要對外售票',['照規定申請，公開票務資訊','私下賣給朋友','先收錢再說','用你自己的帳戶收款'],'錢收在個人帳戶，帳就永遠說不清了。'],
+   ['老師要你寫活動成果報告',['附上照片、人數、經費和檢討','只寫「活動很成功」','抄網路上的範本','拖到下學期再交'],'「很成功」三個字，老師看完只覺得很失敗。'],
+   ['活動進行到一半，有人受傷了',['先處理傷勢，通知校安和負責老師','繼續活動，不要掃興','拍照發限動','叫他自己走去保健室'],'安全永遠排第一，這題沒有第二次機會。',true],
+   ['借到文薈館場地了，鑰匙什麼時候要去拿？',['下班前（17:00 前）到課外組拿','活動開始前再去拿','晚上打給課外組要鑰匙','叫警衛幫忙開門'],'17:00 一過課外組就下班了，你們只能在門口開社課。'],
+   ['場地用完了，離開前一定要做什麼？',['把場地復原，桌椅歸位、垃圾帶走','拍張大合照就走','留給下一個借的人整理','只關燈'],'沒復原場地，下次借用申請可能就沒那麼順了。'],
+   ['成發想借文薈館以外的教室',['到校務資訊系統的「場地借用系統」申請','填文薈館場地借用表單','直接找任課老師要鑰匙','在 Dcard 上問有沒有空教室'],'文薈館以外的空間，要走校務資訊系統的場地借用系統。'],
+   ['學期末要做社團器材盤點',['照系統上的清單逐項清點、回報','用目測，大概都在','把找不到的從清單上刪掉','叫下一屆再處理'],'清單上少了三支麥克風，你也說不出去哪了。'],
+   ['借來的器材被弄壞了',['主動告知出借單位，處理維修或賠償','偷偷放回去','怪上一個借的人','帶回家當紀念品'],'器材有序號，你沒有藉口。'],
+   ['去找廠商談贊助',['準備贊助企劃書和回饋方案','開口就直接要錢','承諾讓他上台演講一小時','說可以讓他當社長'],'廠商已讀，而且把你封鎖了。'],
+   ['有人提議成發延長到晚上十點以後',['先確認場地使用時間規定和安全','開到天亮','規定是參考用的','叫大家翻牆回宿舍'],'規定不是參考用的，處分也不是。'],
+  ]},
+ {boss:'評鑑委員', ava:'🧐', stage:'社團評鑑', rank:'社長', time:11,
+  call:['您好，我是這次的社團評鑑委員。','你們的評鑑資料，我想先看一下。','可以介紹一下你們社團今年做了什麼嗎？'],
+  qs:[
+   ['社團評鑑的資料要怎麼準備？',['平常就持續整理活動紀錄','前一晚熬夜生出來','叫 AI 編出一整年的內容','把別社的資料改個名字'],'評委一眼就看出來，那張照片是別社的。'],
+   ['評委問你：「社團未來的方向是什麼？」',['說明具體的目標和計畫','「看緣分」','「問下一屆」','沉默十秒'],'十秒的沉默，評委覺得有一年那麼長。'],
+   ['要交接給下一屆了',['寫交接手冊，移交帳冊和各種帳號密碼','什麼都不留','只留一句「加油」','把群組刪掉'],'下一屆連社團 IG 的密碼都找不到。'],
+   ['兩位社員吵架，吵到群組裡了',['私下分別溝通，必要時請老師協調','發起投票，看誰是對的','跟著一起吵','截圖發到 Dcard'],'現在全校都知道你們社團的八卦了。'],
+   ['迎新籌備會上，有人提議玩讓人難堪的整人遊戲',['直接拒絕，換成大家都舒服的遊戲','傳統不能廢','投票決定','只要沒人說不舒服就好'],'讓人難堪不是傳統，是霸凌。這題直接出局。',true],
+   ['社團人數少到可能會被停社',['規劃招生，找系學會或其他社團合作','坐以待斃','灌一份假名單','怪學校'],'假名單被抓到，社團直接說掰掰。',true],
+   ['學輔經費補助開放申請了',['注意申請期限，提早寫好活動計畫','截止那天再想','不申請，社費夠用就好','直接複製別社的計畫書'],'錯過申請期限，下學期的活動只能自費。'],
+   ['卸任前的最後一天',['謝謝大家，確認交接都完成了','發長文抱怨所有人','退出所有群組','帶走社辦鑰匙'],'社辦鑰匙在你身上，下一屆被鎖在門外。'],
+  ]},
+];
+const PER_LEVEL = 5;
+/* 臨時狀況題：每關隨機插一題，時間只有 8 秒 */
+const EMER_TIME = 8;
+const EMERGENCIES = [
+ ['晚上 6 點社課要開始，才發現沒人去拿文薈館場地鑰匙，課外組已經下班了',['聯絡社團老師或課外組求助，先把社課移到開放空間，下次記得 17:00 前拿鑰匙','叫人從窗戶爬進去','在門口等到有人來開','宣布今天社課取消，然後消失'],'鑰匙要在 17:00 前拿，這個教訓你會記一輩子。'],
+ ['活動前一小時，主持人突然發燒不能來',['請備用主持人或幹部代打，調整流程','直接取消活動','叫發燒的人吃完藥上台','讓現場觀眾自由發揮'],'沒有備案的活動，就是一場即興災難。'],
+ ['表演到一半，音響突然沒聲音',['請主持人先控場，同時檢查線路、換備用設備','全場一起清唱到結束','宣布散場','在台下對音控大罵'],'你罵得很大聲，可惜麥克風沒開。'],
+ ['訂了 80 個便當，只送來 50 個',['聯絡店家補送，先讓參加者用餐，幹部最後吃','幹部先吃','全場猜拳決定','假裝沒這回事'],'參加者餓著肚子，看幹部吃便當。'],
+ ['迎新出遊的路上，遊覽車拋錨了',['先確認大家安全，聯絡車行派車並回報學校','叫大家下車走路','路邊攔便車','先發限動求救'],'限動按讚數很高，但車還是沒來。'],
+ ['活動中有社員突然昏倒',['立刻求助，通知校安並撥 119','等他自己醒來','先拍照記錄','繼續活動，不要影響大家'],'人命關天，這題沒有第二次機會。',true],
+ ['活動開始前，發現借好的場地被別人佔用了',['拿出借用核准紀錄，聯絡場地管理單位處理','直接把人趕走','跟對方大吵一架','移到走廊辦'],'吵贏了，但活動延遲一小時。'],
+ ['活動前一天，廠商說贊助取消了',['檢查預算，縮小規模或找替代方案','自己偷偷墊錢不講','照原計畫辦，超支再說','上網公開罵廠商'],'超支的錢，最後都算在你頭上。'],
+ ['社團 IG 帳號被盜，開始發奇怪的貼文',['立刻改密碼、向平台檢舉，發公告澄清','不管它，過幾天就好','偷偷開一個新帳號','怪上一屆沒設好密碼'],'奇怪的貼文已經被截圖傳遍全校。'],
+ ['社課要開始了，才發現社辦鑰匙不見了',['聯絡保管鑰匙的單位，先把社課移到備用地點','在門口等鑰匙自己出現','叫人從窗戶爬進去','直接宣布今天不上課'],'從窗戶爬進去的那位同學，被警衛抓到了。'],
+];
+/* 加分題：每關一題，答對 +1 命（最多 5 條）和 300 分，答錯不扣血 */
+const BONUS_TIME = 18, MAX_HP = 5;
+const BONUS = [
+ ['學輔經費的補助範圍，總共分成幾大類？',['7 大類（共 28 項）','3 大類','10 大類','沒有分類，想辦什麼都可以']],
+ ['講師費、評審費等人事費，要另外編列多少補充保費？',['2.11%','5%','10%','不用編']],
+ ['文薈館的會議室，誰可以優先借用？',['社團同學','校外廠商','先搶先贏，誰都一樣','社長的朋友']],
+ ['社團常說的「拉贊」是什麼意思？',['向廠商或校友爭取贊助','拉人來按讚','拉肚子','拉票選社長']],
+ ['「SOP」指的是？',['標準作業流程','社團 Open Party','超級宵夜計畫','社長很 OP'],],
+ ['PDCA 循環裡的「C」代表？',['Check 檢核','Coffee 咖啡','Chill 放鬆','Cancel 取消']],
+ ['活動簽到表最重要的用途是？',['證明參與人數，也是核銷和成果報告的依據','收集大家的電話','練習簽名','當作抽獎券']],
+ ['開會時，記下討論內容和決議的文件叫？',['會議記錄','會議心得','會議日記','會議懺悔錄']],
+ ['交接手冊最重要的功能是？',['讓下一屆不用從零開始','紀念前任社長','湊評鑑的頁數','壓在社辦桌腳']],
+ ['社團經費的「自籌」是指？',['社團自己籌措的錢，例如社費和贊助','學校全額補助','社長自掏腰包','跟同學借錢']],
+ ['活動結束後，最該馬上做的事是？',['開檢討會，整理成果紀錄','全體幹部消失三天','刪掉所有照片','準備下一次宵夜']],
+ ['一份好的活動企劃書「不需要」寫什麼？',['社長的星座運勢','活動目的','經費預算','工作分配']],
+ ['社團評鑑通常會看什麼？',['活動紀錄、成果和經費管理','社長的長相','社辦有沒有冷氣','社員的 IG 追蹤數']],
+];
+const BANNERS = ['@所有人 明天社課改地點！','誰把社辦冷氣開著沒關？？','@所有人 社費今天截止喔','有人看到社團的延長線嗎','幹訓的表單記得填','@所有人 成發門票還剩 30 張','學姐：你們在嗎？'];
+
+/* ====== 音效：Web Audio 合成，不需要音檔 ====== */
+let AC=null, soundOn=true;
+function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){} } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+function tone(f,d,type='sine',v=.15,when=0){ const a=ac(); if(!a||!soundOn)return; const t=a.currentTime+when; const o=a.createOscillator(),g=a.createGain(); o.type=type;o.frequency.value=f; g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.001,t+d); o.connect(g).connect(a.destination); o.start(t); o.stop(t+d); }
+const sfx={
+  ok(){tone(660,.12,'triangle');tone(990,.18,'triangle',.15,.1)},
+  bad(){tone(200,.3,'sawtooth',.12);tone(140,.4,'sawtooth',.12,.12)},
+  siren(){for(let i=0;i<4;i++){tone(i%2?620:880,.25,'sawtooth',.09,i*.25)}},
+  star(){[784,988,1175,1568].forEach((f,i)=>tone(f,.15,'sine',.12,i*.07))},
+  tick(){tone(1200,.05,'square',.06)},
+  up(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.14,i*.11))},
+  ring(){[0,.25,.6,.85].forEach((w,i)=>tone(i%2?880:1175,.18,'sine',.12,w))},
+  help(){tone(330,.15,'square',.08);tone(440,.2,'square',.08,.12)}
+};
+let ringTimer=null;
+function startRing(){ stopRing(); sfx.ring(); try{navigator.vibrate&&navigator.vibrate([300,200,300])}catch(e){} ringTimer=setInterval(()=>sfx.ring(),1800); }
+function stopRing(){ clearInterval(ringTimer); ringTimer=null; }
+document.getElementById('snd').onclick=()=>{ soundOn=!soundOn; document.getElementById('snd').textContent=soundOn?'🔊':'🔇'; if(!soundOn)stopRing(); };
+
+/* ====== 狀態 ====== */
+const $=id=>document.getElementById(id);
+let S={};
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a; }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); setTimeout(()=>el.classList.remove('on'),1800); }
+
+function reset(){
+  S={name:($('nick').value.trim()||'無名社員'), lv:0, qi:0, hp:3, survived:0, score:0, helpUsed:false, wrongs:[], minutes:12*60, batt:100, declines:0, killedBy:null, emerHit:0, bonusHit:0, emerPool:shuffle(EMERGENCIES), bonusPool:shuffle(BONUS)};
+  $('hp').innerHTML='❤️❤️❤️'; $('help').disabled=false; updateStatus();
+}
+function updateStatus(){
+  const h=Math.floor(S.minutes/60)%24, m=S.minutes%60;
+  $('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  $('batt').textContent=(S.batt<=20?'🪫':'🔋')+S.batt+'%';
+}
+
+/* ====== 來電 ====== */
+function incoming(){
+  const L=LEVELS[S.lv]; S.declines=0;
+  $('callAva').textContent=L.ava; $('callName').textContent=L.boss;
+  $('callMsg').textContent='「'+L.call[Math.random()*L.call.length|0]+'」';
+  show('call'); startRing();
+}
+$('decline').onclick=()=>{
+  stopRing(); S.declines++;
+  const L=LEVELS[S.lv];
+  if(S.declines>=2){ $('callMsg').textContent='「拒接兩次？我現在就去社辦找你。」'; setTimeout(()=>{startRing();setTimeout(accept,1200)},400); return; }
+  $('callMsg').textContent='（未接來電）…… '+L.boss+' 又打來了';
+  setTimeout(startRing,900);
+};
+$('accept').onclick=()=>accept();
+function accept(){ stopRing(); ac(); startLevel(); }
+
+/* ====== 關卡 ====== */
+function startLevel(){
+  const L=LEVELS[S.lv];
+  const seq=shuffle(L.qs).slice(0,PER_LEVEL).map(q=>({t:'n',q}));
+  // 臨時狀況：插在第 2~5 題之間
+  const e=S.emerPool.pop(); seq.splice(1+(Math.random()*(seq.length-1)|0),0,{t:'e',q:e});
+  // 加分題：插在臨時狀況之後的隨機位置（不在第一題）
+  const b=S.bonusPool.pop(); seq.splice(2+(Math.random()*(seq.length-1)|0),0,{t:'b',q:[b[0],b[1],'',false]});
+  S.seq=seq; S.qi=0;
+  $('bAva').textContent=L.ava; $('bStage').textContent=`第 ${S.lv+1} 關・${L.stage}`; $('bName').textContent='vs '+L.boss;
+  show('game'); nextQ();
+}
+let timerRAF=null, tStart=0, lastSec=0, answered=true, curLimit=15, leftAtAnswer=0;
+function showAlert(type,cb){
+  const a=$('alert'); a.className='on '+type;
+  if(type==='e'){ $('alI').textContent='🚨'; $('alT').textContent='臨時狀況！'; $('alS').textContent='只有 '+EMER_TIME+' 秒，快想辦法！'; sfx.siren(); try{navigator.vibrate&&navigator.vibrate([200,100,200,100,200])}catch(e){} }
+  else { $('alI').textContent='⭐'; $('alT').textContent='加分題！'; $('alS').textContent='答對多一條命 +300 分\n答錯不扣血'; sfx.star(); }
+  setTimeout(()=>{ a.className=''; cb(); },1500);
+}
+function nextQ(){
+  const item=S.seq[S.qi];
+  const g=$('game'); g.classList.remove('emer','bonus');
+  if(item.t!=='n' && !item.shown){ item.shown=true; answered=true; return showAlert(item.t,nextQ); }
+  if(item.t==='e') g.classList.add('emer'); if(item.t==='b') g.classList.add('bonus');
+  const L=LEVELS[S.lv], Q=item.q;
+  answered=false;
+  $('prog').textContent=`進度 ${S.qi+1}/${S.seq.length}`; $('surv').textContent=`${S.score} 分`;
+  const qb=$('qbox'); qb.innerHTML='';
+  if(item.t!=='n'){ const tg=document.createElement('div'); tg.className='tag'; tg.textContent=item.t==='e'?'🚨 臨時狀況':'⭐ 加分題'; qb.appendChild(tg); }
+  qb.appendChild(document.createTextNode((Q[3]?'⚠️ ':'')+Q[0]));
+  const opts=shuffle(Q[1].map((t,i)=>({t,ok:i===0})));
+  const box=$('opts'); box.innerHTML='';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=o.t; b.dataset.ok=o.ok?'1':''; b.onclick=()=>answer(b); box.appendChild(b); });
+  $('fb').className=''; $('fb').textContent=''; $('nextBtn').style.display='none';
+  $('help').style.display=(S.helpUsed||item.t==='b')?'none':'block';
+  curLimit = item.t==='e'?EMER_TIME : item.t==='b'?BONUS_TIME : L.time;
+  cancelAnimationFrame(timerRAF); tStart=performance.now(); lastSec=curLimit;
+  const loop=now=>{
+    const left=Math.max(0,curLimit-(now-tStart)/1000), pct=left/curLimit; leftAtAnswer=left;
+    $('tfill').style.width=(pct*100)+'%';
+    $('tfill').style.background=pct>.5?'var(--ok)':pct>.25?'#F2C94C':'var(--bad)';
+    const sec=Math.ceil(left); $('tnum').textContent=sec+' 秒';
+    if(sec!==lastSec){ lastSec=sec; if(sec<=3&&sec>0)sfx.tick(); }
+    if(left<=0){ answer(null); return; }
+    timerRAF=requestAnimationFrame(loop);
+  };
+  timerRAF=requestAnimationFrame(loop);
+  if(item.t==='n' && S.lv>0 && Math.random()<.35) setTimeout(()=>{ if(!answered) popBanner(); }, 1500+Math.random()*3000);
+}
+function popBanner(){
+  const L=LEVELS[S.lv];
+  $('bnT').textContent=Math.random()<.5?'社團幹部群（'+(50+Math.random()*200|0)+'）':L.boss;
+  $('bnM').textContent=BANNERS[Math.random()*BANNERS.length|0];
+  $('banner').classList.add('on'); tone(1568,.08,'sine',.08); tone(2093,.1,'sine',.08,.08);
+  setTimeout(()=>$('banner').classList.remove('on'),2600);
+}
+$('banner').onclick=()=>$('banner').classList.remove('on');
+
+function answer(btn){
+  if(answered)return; answered=true; cancelAnimationFrame(timerRAF);
+  const item=S.seq[S.qi], Q=item.q; const all=[...document.querySelectorAll('.opt')];
+  all.forEach(b=>{ b.disabled=true; if(b.dataset.ok)b.classList.add('ok'); });
+  $('help').style.display='none';
+  S.minutes+=11+(Math.random()*9|0); S.batt=Math.max(1,S.batt-(2+(Math.random()*3|0))); updateStatus();
+  const correct=btn&&btn.dataset.ok;
+  const fb=$('fb');
+  if(correct){
+    S.survived++;
+    const timeBonus=Math.round(leftAtAnswer*10);
+    let msg;
+    if(item.t==='b'){
+      sfx.star(); S.bonusHit++; S.score+=300;
+      if(S.hp<MAX_HP){ S.hp++; msg='⭐ 加分成功！+300 分，多一條命 ❤️'; } else msg='⭐ 加分成功！+300 分（命已經滿了）';
+      renderHP(false);
+    }else if(item.t==='e'){
+      sfx.ok(); S.emerHit++; S.score+=200+timeBonus; msg=`🚨 危機解除！+${200+timeBonus} 分，臨場反應一流。`;
+    }else{
+      sfx.ok(); S.score+=100+timeBonus;
+      msg=['穩！你今天也活下來了。','漂亮，學弟妹覺得你很可靠。','這就是幹部該有的樣子 👍','學弟妹默默把你設成置頂 📌'][Math.random()*4|0]+` +${100+timeBonus} 分`;
+    }
+    fb.className='good'; fb.textContent=msg;
+  }else{
+    if(btn)btn.classList.add('bad');
+    if(item.t==='b'){
+      sfx.bad(); fb.className='boom'; fb.textContent=(btn?'':'⏰ 時間到！')+'加分題沒答對，沒關係，不扣血。';
+      S.wrongs.push({q:Q[0], a:Q[1][0], r:'（加分題，不扣血）', t:'b'});
+    }else{
+      sfx.bad();
+      S.wrongs.push({q:Q[0], a:Q[1][0], r:Q[2], t:item.t});
+      fb.className='boom'; fb.textContent=(btn?'':'⏰ 時間到！群組已經在 @你 了。\n')+'💥 '+Q[2];
+      if(Q[3]){ S.hp=0; S.killedBy=Q[2]; } else S.hp--;
+      renderHP(true);
+    }
+  }
+  $('surv').textContent=`${S.score} 分`;
+  $('nextBtn').textContent = S.hp<=0 ? '領取社團通知單…' : (S.qi+1>=S.seq.length ? '完成這一關 →' : '下一題 →');
+  $('nextBtn').style.display='block';
+  setTimeout(()=>$('nextBtn').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+function renderHP(lost){
+  const cap=Math.max(3,S.hp); let h='';
+  for(let i=0;i<cap;i++) h+= i<S.hp ? '❤️' : (lost&&i===S.hp?'<span class="lost">🖤</span>':'🖤');
+  $('hp').innerHTML=h; if(lost){ try{navigator.vibrate&&navigator.vibrate(150)}catch(e){} }
+}
+$('nextBtn').onclick=()=>{
+  if(S.hp<=0) return finish(false);
+  S.qi++;
+  if(S.qi>=S.seq.length) return levelClear();
+  $('game').scrollTop=0; nextQ();
+};
+$('help').onclick=()=>{
+  if(S.helpUsed||answered)return; S.helpUsed=true; sfx.help();
+  const wrong=shuffle([...document.querySelectorAll('.opt')].filter(b=>!b.dataset.ok)).slice(0,2);
+  wrong.forEach(b=>b.classList.add('gone'));
+  $('help').style.display='none'; toast('📞 畢業學長：這兩個千萬別選');
+};
+function levelClear(){
+  const L=LEVELS[S.lv];
+  if(S.lv>=LEVELS.length-1) return finish(true);
+  sfx.up();
+  const N=LEVELS[S.lv+1];
+  $('clearIcon').textContent='🎊';
+  $('clearTitle').textContent='撐過「'+L.stage+'」！';
+  $('clearText').innerHTML='';
+  const p=document.createElement('div'); p.innerHTML=`你從 <b>${L.rank}</b> 升任 <b>${N.rank}</b><br>目前分數：<b>${S.score}</b><br>剩餘生命：${'❤️'.repeat(S.hp)}<br><br>下一位來電者：${N.ava} <b>${N.boss}</b>`;
+  $('clearText').appendChild(p);
+  show('clear');
+}
+$('nextLevel').onclick=()=>{ S.lv++; incoming(); };
+
+/* ====== 結算 & 戰績卡 ====== */
+function rankName(win){
+  if(win) return '傳奇社長 🏆';
+  if(S.lv===0) return S.survived<=1?'社團幽靈 👻':'菜鳥社員';
+  return LEVELS[S.lv].rank+'（未完成）';
+}
+function finish(win){
+  if(win) sfx.up(); else sfx.bad();
+  const rank=rankName(win);
+  $('rTitle').textContent= win?'恭喜卸任！':'社團通知單';
+  drawCard(win,rank);
+  const txt=`我在「社團生存戰」拿了 ${S.score} 分，最後是【${rank.replace(/ .+$/,'')}】。\n你能從菜鳥升到社長嗎？來挑戰 👉 ${location.href.split('#')[0]}`;
+  $('copybox').value=txt; $('copybox').style.display='none';
+  $('copyBtn').onclick=async()=>{
+    try{ await navigator.clipboard.writeText(txt); toast('已複製！貼給朋友吧'); }
+    catch(e){ $('copybox').style.display='block'; $('copybox').select(); toast('請手動複製下面的文字'); }
+  };
+  buildReview();
+  $('repBtn').textContent = S.wrongs.length ? `🧾 檢討錯題（${S.wrongs.length} 題）` : '🧾 檢討錯題';
+  show('result'); $('result').scrollTop=0;
+}
+function buildReview(){
+  const bd=$('rvB'); bd.innerHTML='';
+  $('rvT').textContent=`錯題檢討（${S.wrongs.length} 題）`;
+  if(!S.wrongs.length){ const d=document.createElement('div'); d.className='it'; d.textContent='🎉 一題都沒錯，你是課外組最愛的社長。'; bd.appendChild(d); return; }
+  S.wrongs.forEach((w,i)=>{ const d=document.createElement('div'); d.className='it';
+    const lab=w.t==='e'?'🚨 臨時狀況':w.t==='b'?'⭐ 加分題':'第 '+(i+1)+' 個錯誤';
+    const l=document.createElement('div'); l.style.cssText='font-size:12px;color:var(--muted)'; l.textContent=lab;
+    const q=document.createElement('div'); q.style.fontWeight='700'; q.textContent='❓ '+w.q;
+    const a=document.createElement('div'); a.className='c'; a.textContent='✅ 正解：'+w.a;
+    const r=document.createElement('div'); r.style.color='var(--muted)'; r.textContent='💬 '+w.r;
+    d.append(l,q,a,r); bd.appendChild(d); });
+}
+$('repBtn').onclick=()=>{ $('review').classList.add('on'); $('rvB').scrollTop=0; };
+$('rvX').onclick=()=>$('review').classList.remove('on');
+$('review').onclick=e=>{ if(e.target.id==='review') $('review').classList.remove('on'); };
+$('again').onclick=()=>{ $('review').classList.remove('on'); reset(); show('login'); };
+
+function wrapText(ctx,text,x,y,maxW,lh){
+  let line=''; for(const ch of text){ if(ctx.measureText(line+ch).width>maxW){ ctx.fillText(line,x,y); line=ch; y+=lh; } else line+=ch; }
+  ctx.fillText(line,x,y); return y;
+}
+function drawCard(win,rank){
+  const c=document.createElement('canvas'); c.width=1080; c.height=1350; const x=c.getContext('2d');
+  const F='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+  const g=x.createLinearGradient(0,0,0,1350); g.addColorStop(0,win?'#FFE29A':'#FFE8D6'); g.addColorStop(1,'#FFF6E9');
+  x.fillStyle=g; x.fillRect(0,0,1080,1350);
+  x.fillStyle='#fff'; x.beginPath(); x.roundRect(70,90,940,1170,48); x.fill();
+  x.textAlign='center'; x.fillStyle='#8A7A6A'; x.font=`600 40px ${F}`; x.fillText('社團生存戰・正式通知單',540,190);
+  x.font=`160px ${F}`; x.fillText(win?'🏆':(S.lv===0&&S.survived<=1?'👻':'📣'),540,390);
+  x.fillStyle='#2B2118'; x.font=`700 58px ${F}`; x.fillText(S.name+' 同學',540,500);
+  x.font=`500 40px ${F}`; x.fillStyle='#8A7A6A'; x.fillText('最終職位',540,590);
+  x.font=`800 84px ${F}`; x.fillStyle='#D9772A'; x.fillText(rank.replace(/ .+$/,''),540,690);
+  x.font=`600 44px ${F}`; x.fillStyle='#2B2118';
+  x.font=`800 64px ${F}`; x.fillStyle='#2B2118'; x.fillText(`${S.score} 分`,540,800);
+  x.font=`600 40px ${F}`;
+  x.fillText(`闖到第 ${S.lv+1} 關 ・ 危機解除 ${S.emerHit} 次 ・ 加分 ${S.bonusHit} 題`,540,875);
+  x.font=`500 40px ${F}`; x.fillStyle='#8A7A6A';
+  const quote= win?'交接完成。下一屆會記得你的。': (S.killedBy || (S.wrongs.at(-1)||{}).r || '社團需要你，但你需要練習。');
+  wrapText(x,'「'+quote+'」',540,990,800,60);
+  x.font=`600 34px ${F}`; x.fillStyle='#B8A894'; x.fillText('你能從菜鳥升到社長嗎？',540,1200);
+  $('cardimg').src=c.toDataURL('image/png');
+}
+if(!CanvasRenderingContext2D.prototype.roundRect){ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h){this.rect(x,y,w,h)}; }
+
+$('startBtn').onclick=()=>{ ac(); reset(); incoming(); };
+document.addEventListener('visibilitychange',()=>{ if(!AC)return; document.hidden?AC.suspend():AC.resume(); });
+</script>
+</body>
+</html>
